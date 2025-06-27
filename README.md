@@ -1,0 +1,1 @@
+# storefront-child-theme-funky
