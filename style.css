@@ -1,0 +1,80 @@
+/*
+Theme Name: Storefront Child Funky
+Version: 1.0
+Description: Child theme for Storefront.
+Author: Woo
+Author URI: https://woocommerce.com
+Template: storefront
+*/
+
+/* --------------- Font Setup ----------------- */
+@font-face {
+    font-family: 'CustomFont';
+    src: url('fonts/DynaPuff-Regular.woff2') format('woff2'), url('fonts/DynaPuff-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* --------------- Theme Customization ----------------- */
+h1, h2, h3, .nav-menu li a  {
+    font-family: 'CustomFont', sans-serif !important;
+}
+
+
+.site-header {
+    border-bottom-color: #0ee981;
+}
+
+.site-header span {
+    font-family: 'CustomFont', sans-serif !important;
+}
+
+.home .site-header {
+    margin-bottom: 0 !important;
+}
+
+/* --------------- Shop Customization ----------------- */
+.site-header-cart .cart-contents:after,
+.storefront-handheld-footer-bar ul li.cart > a:before {
+    content: "\f07a" !important;
+}
+
+/* --------------- Image Rounding ----------------- */
+.wc-block-components-product-image.wc-block-grid__product-image.wp-block-woocommerce-product-image {
+    border-radius: 5px !important;
+}
+
+/* --------------- Buttons ----------------- */
+button,
+.wp-block-button__link,
+.button.product_type_simple,
+.button.product_type_variable,
+.wp-block-search__inside-wrapper input {
+    border-radius: 10px !important;
+}
+
+.wp-block-search__button {
+    border: 0 !important;
+}
+
+/* --------------- Links ----------------- */
+.hentry .entry-content a {
+    text-decoration: none;
+}
+
+/* --------------- Shape Divider----------------- */
+.custom-shape-divider {
+    width: 100vw;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.custom-shape-divider svg {
+    width: 100%;
+}
+
+.header-widget-region {
+    margin-bottom: 10vw;
+}
