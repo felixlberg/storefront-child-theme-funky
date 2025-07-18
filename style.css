@@ -16,13 +16,18 @@ Template: storefront
     font-display: swap;
 }
 
+/* --------------- Root Variables ----------------- */
+:root {
+  --radius: 10px;
+}
+
 /* --------------- Theme Customization ----------------- */
 /* h1, h2, h3, .nav-menu li a, .site-header span  {
     font-family: 'CustomFont', sans-serif !important;
 } */
 
 .site-header {
-    border-bottom-color: #0ee981;
+    border-bottom: none;
 }
 
 .home .site-header {
@@ -42,7 +47,7 @@ Template: storefront
 
 /* --------------- Image Rounding ----------------- */
 .wc-block-components-product-image.wc-block-grid__product-image.wp-block-woocommerce-product-image {
-    border-radius: 5px !important;
+    border-radius: var(--radius) !important;
 }
 
 /* --------------- Buttons ----------------- */
@@ -51,7 +56,7 @@ button,
 .button.product_type_simple,
 .button.product_type_variable,
 .wp-block-search__inside-wrapper input {
-    border-radius: 10px !important;
+    border-radius: var(--radius) !important;
 }
 
 .wp-block-search__button {
@@ -97,10 +102,12 @@ button,
     display:flex;
     gap:var(--slide-gap);
     --slide-width:calc((100% - (var(--slides-to-show) - 1) * var(--slide-gap)) /var(--slides-to-show));
-    box-sizing:border-box}.blaze-track>*{
+    box-sizing:border-box
+}
+.blaze-track>*{
         box-sizing:border-box;width:var(--slide-width);
         flex-shrink:0
-    }
+}
 
 .blaze-slider {
   position: relative;
@@ -163,9 +170,10 @@ button,
 .woo-slider .post_card {
   position: relative;
   max-width: 500px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   overflow: hidden;
   transition: all 0.3s ease;
+  text-align: left;
 }
 .woo-slider .post_card:hover {
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
@@ -211,12 +219,12 @@ span.wwo_card_details p {
 .woo-slider .onsale {
   z-index: 3;
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 5px;
+  left: 5px;
   background: #ff6b6b;
   color: #fff;
   padding: 5px 10px;
-  border-radius: 3px;
+  border-radius: var(--radius);
   font-size: 12px;
   font-weight: bold;
 }
@@ -224,7 +232,7 @@ span.wwo_card_details p {
   color: white;
   border: none;
   padding: 8px 15px;
-  border-radius: 3px;
+  border-radius: var(--radius);
   text-decoration: none;
   font-size: 14px;
   display: inline-block;
