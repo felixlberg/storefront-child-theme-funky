@@ -1,6 +1,6 @@
 <?php
 /**
- * Load cunstom stylesheet
+ * Load cunstom stylesheets
  */
 add_action('wp_enqueue_scripts', 'funky_enqueue_styles');
 function funky_enqueue_styles() {
@@ -14,6 +14,14 @@ function funky_enqueue_styles() {
         wp_get_theme()->get('Version')
     );
 }
+
+// Tell WP you support editor styles
+add_action( 'after_setup_theme', function() {
+  // Registers editor-style.css in your child theme root
+  add_theme_support( 'editor-styles' );
+  add_editor_style( 'editor-style.css' );
+} );
+
 
 /**
  * Disable the Search Box in the Storefront Theme
@@ -41,6 +49,14 @@ function woo_slider_shortcode($atts) {
 	if (!function_exists('is_woocommerce')) {
 		return;
 	}
+
+    // Get Theme colors
+    // Accent color (already includes #)
+    $accent_color = get_theme_mod( 'storefront_accent_color', '#000000' );
+    // Background color (add # prefix)
+    $bg_color_value = get_theme_mod( 'background_color', '' );
+    $background_color = $bg_color_value ? '#' . $bg_color_value : '#FFFFFF';
+
     // Parse shortcode attributes
     $atts = shortcode_atts(array(
         'num'         => 10,
@@ -57,6 +73,7 @@ function woo_slider_shortcode($atts) {
         'card'        => '4',
         'auto_paly'   => 'off',
         'theme'		  => '1',
+        'card-details'=> 'on',
 
     ), $atts, 'woo-slider');
 
@@ -294,33 +311,34 @@ function woo_slider_shortcode($atts) {
                     }
                     ?>
                 </a>
-                <span class="wwo_card_details">
-                    <a class="p_title" href="<?php echo esc_url(get_permalink()); ?>"><?php the_title(); ?></a>
+            <?php
+                if ($atts['card-details'] === 'on') {
 
-                    <?php
-                    // Show rating if enabled
-                    if ($atts['rating'] === 'on' && $product->get_average_rating() > 0) {
-                        echo '<span class="woocommerce">';
-                        echo wc_get_rating_html($product->get_average_rating());
-                        echo '</span>';
-                    }
+                    echo '<span class="wwo_card_details"' . 'style="background-color:' . esc_attr( $accent_color ) . ';">';
+                        echo '<a class="p_title" href="' . esc_url(get_permalink()) . '">' . get_the_title() . '</a>';
 
-                    // Show product short description if enabled
-                    if ($atts['description'] === 'on') {
-                        echo '<p>' . wp_trim_words(get_the_excerpt(), 15, '...') . '</p>';
-                    }
+                        // Rating
+                        if ($atts['rating'] === 'on' && $product->get_average_rating() > 0) {
+                            echo '<span class="woocommerce">' . wc_get_rating_html($product->get_average_rating()) . '</span>';
+                        }
 
-                    // Show price
-                    echo '<span class="price"><div>' . $product->get_price_html() . '</div></span>';
+                        // Description
+                        if ($atts['description'] === 'on') {
+                            echo '<p>' . wp_trim_words(get_the_excerpt(), 15, '...') . '</p>';
+                        }
 
-                    // Add to cart button
-                    echo sprintf('<a href="%s" data-quantity="1" class="button add_to_cart_button ajax_add_to_cart" data-product_id="%s" rel="nofollow">%s</a>',
-                        esc_url($product->add_to_cart_url()),
-                        esc_attr($product->get_id()),
-                        esc_html($product->add_to_cart_text())
-                    );
-                    ?>
-                </span>
+                        // Price
+                        echo '<span class="price"><div>' . $product->get_price_html() . '</div></span>';
+
+                        // Add to Cart Button
+                        echo sprintf(
+                            '<a href="%s" data-quantity="1" class="button add_to_cart_button ajax_add_to_cart" data-product_id="%s" rel="nofollow"'. 'style="background-color:' . esc_attr( $background_color ) . ';">%s</a>',
+                            esc_url($product->add_to_cart_url()),
+                            esc_attr($product->get_id()),
+                            esc_html($product->add_to_cart_text())
+                        );
+                    echo '</span>';
+                }?>
             </div>
             <?php
         }

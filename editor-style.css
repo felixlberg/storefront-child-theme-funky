@@ -1,0 +1,7 @@
+/* --------------- Admin Settings ----------------- */
+.is-focus-mode .block-editor-block-list__block:not(.has-child-selected) {
+    opacity: .6;
+}
+.components-disabled {
+    opacity: 1;
+}
