@@ -86,7 +86,7 @@ button,
 
 /* --------------- Storefront Parallax Hero  ----------------- */
 .sph-hero {
-    border-radius: var(--radius);
+    border-radius: var(--radius) !important;
 }
 
 /* --------------- Product Slider ----------------- */
