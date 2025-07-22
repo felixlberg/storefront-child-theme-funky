@@ -84,6 +84,11 @@ button,
     margin-bottom: 10vw;
 }
 
+/* --------------- Storefront Parallax Hero  ----------------- */
+.sph-hero {
+    border-radius: var(--radius);
+}
+
 /* --------------- Product Slider ----------------- */
 .blaze-slider {
     --slides-to-show:1;
