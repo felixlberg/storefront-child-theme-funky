@@ -10,7 +10,7 @@ Template: storefront
 /* --------------- Font Setup ----------------- */
 @font-face {
     font-family: 'CustomFont';
-    src: url('fonts/Outfit-Regular.woff2') format('woff2'), url('fonts/Outfit-Regular.woff') format('woff');
+    src: url('assets/fonts/Outfit-Regular.woff2') format('woff2'), url('assets/fonts/Outfit-Regular.woff') format('woff');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -22,9 +22,9 @@ Template: storefront
 }
 
 /* --------------- Theme Customization ----------------- */
-/* h1, h2, h3, .nav-menu li a, .site-header span  {
+h1, h2, h3, .nav-menu li a, .site-header span  {
     font-family: 'CustomFont', sans-serif !important;
-} */
+}
 
 .site-header {
     border-bottom: none;
