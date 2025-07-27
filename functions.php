@@ -39,6 +39,10 @@ function bbloomer_remove_storefront_breadcrumbs() {
    remove_action( 'storefront_before_content', 'woocommerce_breadcrumb', 10 );
 }
 
+/**
+ * Remove the Storefront Theme Copyright Link “Built with Storefront”
+ */
+add_filter( 'storefront_credit_link', '__return_false' );
 
 /*
  *Product Carousel Slider Shortcode by WPCookie
