@@ -53,6 +53,62 @@ function wpdocs_add_svg( $mimes ) {
 }
 add_filter( 'upload_mimes', 'wpdocs_add_svg' );
 
+/**
+ *  Smart SEO Meta Tags with automation
+ */
+function add_smart_seo_tags() {
+    if (!is_singular()) return;
+
+    global $post;
+
+    // Get basic info
+    $title = get_the_title();
+    $site_name = get_bloginfo('name');
+    $excerpt = has_excerpt() ? get_the_excerpt() : wp_trim_words($post->post_content, 30);
+    $permalink = get_permalink();
+
+    // Open Graph Title (auto-generated with fallback)
+    $og_title = get_post_meta($post->ID, 'og_title', true);
+    if (empty($og_title)) {
+        $og_title = $title . ' - ' . $site_name; // Auto-generate
+    }
+
+    // Open Graph Description (auto-generated with fallback)
+    $og_description = get_post_meta($post->ID, 'og_description', true);
+    if (empty($og_description)) {
+        $og_description = !empty($excerpt) ? $excerpt : get_bloginfo('description');
+    }
+
+    // Open Graph Image (auto-detected with fallback)
+    $og_image = get_post_meta($post->ID, 'og_image', true);
+    if (empty($og_image)) {
+        if (has_post_thumbnail($post->ID)) {
+            $og_image = get_the_post_thumbnail_url($post->ID, 'large');
+        }
+    }
+
+    // Output Open Graph Tags
+    echo '<meta property="og:title" content="' . esc_attr($og_title) . '" />' . "\n";
+    echo '<meta property="og:description" content="' . esc_attr($og_description) . '" />' . "\n";
+    echo '<meta property="og:image" content="' . esc_url($og_image) . '" />' . "\n";
+    echo '<meta property="og:url" content="' . esc_url($permalink) . '" />' . "\n";
+    echo '<meta property="og:type" content="article" />' . "\n";
+    echo '<meta property="og:site_name" content="' . esc_attr($site_name) . '" />' . "\n";
+
+    // Twitter Card Tags
+    echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
+    echo '<meta name="twitter:title" content="' . esc_attr($og_title) . '" />' . "\n";
+    echo '<meta name="twitter:description" content="' . esc_attr($og_description) . '" />' . "\n";
+    echo '<meta name="twitter:image" content="' . esc_url($og_image) . '" />' . "\n";
+
+    // Regular Meta Description
+    $meta_desc = get_post_meta($post->ID, 'meta_description', true);
+    if (!empty($meta_desc)) {
+        echo '<meta name="description" content="' . esc_attr($meta_desc) . '" />' . "\n";
+    }
+}
+add_action('wp_head', 'add_smart_seo_tags');
+
 /*
  *Product Carousel Slider Shortcode
  *[woo-slider card="4" num="10" sale_badge="on" rating="on" description="off" check_stock="on" id="" on_sale="off" cats=""  offset="" type="" ]
