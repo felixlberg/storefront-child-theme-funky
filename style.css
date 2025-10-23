@@ -245,3 +245,41 @@ span.wwo_card_details p {
   transition: background 0.3s;
   text-align: center;
 }
+
+/* --------------- Instagram Profile Preview ----------------- */
+.ig-profile-preview {
+    display: grid;
+    gap: 15px;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #ddd;
+    border-radius: var(--radius);
+    padding: 15px;
+    margin: 10px 0;
+    transition: all 0.3s ease;
+}
+
+.ig-profile-preview:hover {
+    border-color: #E1306C;
+    box-shadow: 0 2px 8px rgba(225, 48, 108, 0.2);
+    transform: translateY(-2px);
+}
+
+.ig-profile-username {
+    grid-column: span 2;
+    font-weight: bold;
+    text-align: center;
+}
+
+.ig-profile-image {
+    max-width: 100px;
+    border-radius: 50%;
+}
+
+.ig-profile-desc {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0;
+}
