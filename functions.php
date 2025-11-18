@@ -644,14 +644,6 @@ function manual_url_button_shortcode($atts) {
     }
 
     $url = esc_url($atts['url']);
-
-    $cache_key = 'manual_url_button_' . md5($url);
-    $cached_output = get_transient($cache_key);
-
-    if ($cached_output !== false) {
-        return $cached_output . '<!-- Cached version -->';
-    }
-
     $image = esc_url($atts['image']);
     $title = sanitize_text_field($atts['title']);
     $description = sanitize_text_field($atts['description']);
@@ -668,64 +660,62 @@ function manual_url_button_shortcode($atts) {
     }
     $output .= '</a>';
 
-    set_transient($cache_key, $output, 86400);
-
     return $output;
 }
 add_shortcode('url-button', 'manual_url_button_shortcode');
 
 // Open Graph Shortcode
-function open_graph_shortcode($atts) {
-    $atts = shortcode_atts(array(
-        'url' => 'https://website.com'
-    ), $atts);
-
-    $url = esc_url($atts['url']);
-
-    // Create unique cache key based on URL
-    $cache_key = 'open_graph_' . md5($url);
-
-    // Try to get cached version first
-    // $cached_output = get_transient($cache_key);
-    //
-    // if ($cached_output !== false) {
-    //     return $cached_output . '<!-- Cached version -->';
-    // }
-
-    // If no cache, fetch from Instagram
-    $response = wp_remote_get($url, array(
-        'timeout' => 30,
-        'user-agent' => 'Mozilla/5.0 (compatible; WordPress)'
-    ));
-
-    if (is_wp_error($response)) {
-        return '<!-- Error fetching profile -->';
-    }
-
-    $html = wp_remote_retrieve_body($response);
-
-    // Extract Open Graph data
-    preg_match('/<meta property="og:image" content="([^"]*)"/i', $html, $image);
-    preg_match('/<meta property="og:title" content="([^"]*)"/i', $html, $title);
-    preg_match('/<meta property="og:description" content="([^"]*)"/i', $html, $desc);
-
-    $output = '<a href="' . esc_url($url) . '" target="_blank" rel="noopener" class="og-preview">';
-    if (!empty($image[1])) {
-        $output .= '<div class="og-image"><img src="' . esc_url($image[1]) . '" alt="Link Thumbnail"></div>';
-    }
-    if (!empty($title)) {
-        $clean_title = html_entity_decode($title[1]);
-        $output .= '<h3 class="wp-block-post-title og-title">' . esc_html($clean_title) . '</h3>';
-    }
-    if (!empty($desc[1])) {
-        $clean_desc = html_entity_decode($desc[1]);
-        $output .= '<p class="main-header has-medium-font-size og-desc">' . esc_html($clean_desc) . '</p>';
-    }
-    $output .= '</a>';
-
-    // Cache for 24 hours (86400 seconds)
-    // set_transient($cache_key, $output, 86400);
-
-    return $output . '<!-- Fresh fetch -->';
-}
-add_shortcode('open-graph', 'open_graph_shortcode');
+// function open_graph_shortcode($atts) {
+//     $atts = shortcode_atts(array(
+//         'url' => 'https://website.com'
+//     ), $atts);
+//
+//     $url = esc_url($atts['url']);
+//
+//     // Create unique cache key based on URL
+//     $cache_key = 'open_graph_' . md5($url);
+//
+//     // Try to get cached version first
+//     // $cached_output = get_transient($cache_key);
+//     //
+//     // if ($cached_output !== false) {
+//     //     return $cached_output . '<!-- Cached version -->';
+//     // }
+//
+//     // If no cache, fetch from Instagram
+//     $response = wp_remote_get($url, array(
+//         'timeout' => 30,
+//         'user-agent' => 'Mozilla/5.0 (compatible; WordPress)'
+//     ));
+//
+//     if (is_wp_error($response)) {
+//         return '<!-- Error fetching profile -->';
+//     }
+//
+//     $html = wp_remote_retrieve_body($response);
+//
+//     // Extract Open Graph data
+//     preg_match('/<meta property="og:image" content="([^"]*)"/i', $html, $image);
+//     preg_match('/<meta property="og:title" content="([^"]*)"/i', $html, $title);
+//     preg_match('/<meta property="og:description" content="([^"]*)"/i', $html, $desc);
+//
+//     $output = '<a href="' . esc_url($url) . '" target="_blank" rel="noopener" class="og-preview">';
+//     if (!empty($image[1])) {
+//         $output .= '<div class="og-image"><img src="' . esc_url($image[1]) . '" alt="Link Thumbnail"></div>';
+//     }
+//     if (!empty($title)) {
+//         $clean_title = html_entity_decode($title[1]);
+//         $output .= '<h3 class="wp-block-post-title og-title">' . esc_html($clean_title) . '</h3>';
+//     }
+//     if (!empty($desc[1])) {
+//         $clean_desc = html_entity_decode($desc[1]);
+//         $output .= '<p class="main-header has-medium-font-size og-desc">' . esc_html($clean_desc) . '</p>';
+//     }
+//     $output .= '</a>';
+//
+//     // Cache for 24 hours (86400 seconds)
+//     // set_transient($cache_key, $output, 86400);
+//
+//     return $output . '<!-- Fresh fetch -->';
+// }
+// add_shortcode('open-graph', 'open_graph_shortcode');
