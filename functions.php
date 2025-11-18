@@ -55,7 +55,33 @@ add_filter( 'upload_mimes', 'wpdocs_add_svg' );
 
 /**
  *  Smart SEO Meta Tags with automation
+ *
+ * Override behavior: Add custom fields:
+ *    og_title = "My Custom Share Title"
+ *    og_description = "My custom share description"
+ *    og_image = "https://example.com/custom-image.jpg"
+ *    meta_description = "My SEO description"
  */
+ // Get content type
+function get_og_type() {
+     if (is_front_page() || is_home()) {
+         return 'website';
+     } elseif (is_singular('post')) {
+         return 'article';
+     } elseif (is_singular('product')) {
+         return 'product'; // If you have WooCommerce
+     } elseif (is_author()) {
+         return 'profile';
+     } elseif (is_singular()) {
+         // For pages (about, contact, etc.) - use 'website'
+         return 'website';
+     } else {
+         // Fallback for archives, search, etc.
+         return 'website';
+     }
+}
+
+// Add seo tags
 function add_smart_seo_tags() {
     if (!is_singular()) return;
 
@@ -64,27 +90,28 @@ function add_smart_seo_tags() {
     // Get basic info
     $title = get_the_title();
     $site_name = get_bloginfo('name');
-    $excerpt = has_excerpt() ? get_the_excerpt() : wp_trim_words($post->post_content, 30);
     $permalink = get_permalink();
+    $meta_desc = get_post_meta($post->ID, 'meta_description', true);
 
-    // Open Graph Title (auto-generated with fallback)
+    // Determine OG type
+    $og_type = get_og_type();
+
+    // Open Graph Title
     $og_title = get_post_meta($post->ID, 'og_title', true);
     if (empty($og_title)) {
-        $og_title = $title . ' - ' . $site_name; // Auto-generate
+        $og_title = $title . ' - ' . $site_name;
     }
 
-    // Open Graph Description (auto-generated with fallback)
+    // Open Graph Description
     $og_description = get_post_meta($post->ID, 'og_description', true);
-    if (empty($og_description)) {
-        $og_description = !empty($excerpt) ? $excerpt : get_bloginfo('description');
+    if (empty($og_description)  && !empty($meta_desc)) {
+        $og_description = $meta_desc;
     }
 
-    // Open Graph Image (auto-detected with fallback)
+    // Open Graph Image
     $og_image = get_post_meta($post->ID, 'og_image', true);
-    if (empty($og_image)) {
-        if (has_post_thumbnail($post->ID)) {
-            $og_image = get_the_post_thumbnail_url($post->ID, 'large');
-        }
+    if (empty($og_image) && has_post_thumbnail($post->ID)) {
+        $og_image = get_the_post_thumbnail_url($post->ID, 'large');
     }
 
     // Output Open Graph Tags
@@ -92,7 +119,7 @@ function add_smart_seo_tags() {
     echo '<meta property="og:description" content="' . esc_attr($og_description) . '" />' . "\n";
     echo '<meta property="og:image" content="' . esc_url($og_image) . '" />' . "\n";
     echo '<meta property="og:url" content="' . esc_url($permalink) . '" />' . "\n";
-    echo '<meta property="og:type" content="article" />' . "\n";
+    echo '<meta property="og:type" content="' . esc_attr($og_type) . '" />' . "\n";
     echo '<meta property="og:site_name" content="' . esc_attr($site_name) . '" />' . "\n";
 
     // Twitter Card Tags
@@ -101,13 +128,115 @@ function add_smart_seo_tags() {
     echo '<meta name="twitter:description" content="' . esc_attr($og_description) . '" />' . "\n";
     echo '<meta name="twitter:image" content="' . esc_url($og_image) . '" />' . "\n";
 
-    // Regular Meta Description
-    $meta_desc = get_post_meta($post->ID, 'meta_description', true);
+    // Output Regular Meta Description
     if (!empty($meta_desc)) {
         echo '<meta name="description" content="' . esc_attr($meta_desc) . '" />' . "\n";
     }
+
 }
 add_action('wp_head', 'add_smart_seo_tags');
+
+
+// Add Article Schema.org markup for blog posts
+function add_article_schema() {
+    if (!is_singular('post')) return;
+
+    global $post;
+
+    $author_name = get_the_author_meta('display_name', $post->post_author);
+
+    $description = get_post_meta($post->ID, 'meta_description', true);
+    if (empty($description)) {
+        $description = has_excerpt() ? get_the_excerpt() : wp_trim_words($post->post_content, 30);
+    }
+
+    $schema = array(
+        '@context' => 'https://schema.org',
+        '@type' => 'Article',
+        'headline' => get_the_title(),
+        'description' => $description,
+        'datePublished' => get_the_date('c'),
+        'dateModified' => get_the_modified_date('c'),
+        'author' => array(
+            '@type' => 'Person',
+            'name' => $author_name
+        ),
+        'publisher' => array(
+            '@type' => 'Organization',
+            'name' => get_bloginfo('name'),
+            'logo' => get_site_logo_schema() // Improved logo function
+        ),
+        'mainEntityOfPage' => array(
+            '@type' => 'WebPage',
+            '@id' => get_permalink()
+        )
+    );
+
+    // IMPROVED: Get actual image dimensions
+    if (has_post_thumbnail($post->ID)) {
+        $image_data = wp_get_attachment_image_src(get_post_thumbnail_id($post->ID), 'full');
+        if ($image_data) {
+            list($src, $width, $height) = $image_data;
+            $schema['image'] = array(
+                '@type' => 'ImageObject',
+                'url' => $src,
+                'width' => $width,
+                'height' => $height
+            );
+        }
+    }
+
+    echo '<script type="application/ld+json">' . json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>';
+}
+add_action('wp_head', 'add_article_schema');
+
+// Get dimensions of image
+function get_site_logo_schema() {
+    $custom_logo_id = get_theme_mod('custom_logo');
+    if ($custom_logo_id) {
+        $logo_data = wp_get_attachment_image_src($custom_logo_id, 'full');
+        if ($logo_data) {
+            list($src, $width, $height) = $logo_data;
+            return array(
+                '@type' => 'ImageObject',
+                'url' => $src,
+                'width' => $width,
+                'height' => $height
+            );
+        }
+    }
+}
+
+// Modify Mobile Navigation
+
+// Remove default links
+add_filter( 'storefront_handheld_footer_bar_links', 'jk_remove_handheld_footer_links' );
+function jk_remove_handheld_footer_links( $links ) {
+	unset( $links['my-account'] );
+	unset( $links['search'] );
+	unset( $links['cart'] );
+
+	return $links;
+}
+
+// Add custom links
+add_filter( 'storefront_handheld_footer_bar_links', 'jk_add_home_link' );
+function jk_add_home_link( $links ) {
+	$new_links = array(
+		'home' => array(
+			'priority' => 10,
+			'callback' => 'jk_home_link',
+		),
+	);
+
+	$links = array_merge( $new_links, $links );
+
+	return $links;
+}
+
+function jk_home_link() {
+	echo '<a href="' . esc_url( home_url( '/' ) ) . '">' . __( 'Home' ) . '</a>';
+}
 
 /*
  *Product Carousel Slider Shortcode
@@ -501,16 +630,69 @@ function woo_slider_shortcode($atts) {
 // Register the shortcode
 add_shortcode('woo-slider', 'woo_slider_shortcode');
 
-
-// Instagram profile shortcode
-function ig_profile_shortcode($atts) {
+// Manual Url Button Shortcode
+function manual_url_button_shortcode($atts) {
     $atts = shortcode_atts(array(
-        'url' => 'https://instagram.com/username'
+        'url' => '',
+        'image' => '',
+        'title' => '',
+        'description' => ''
+    ), $atts);
+
+    if (empty($atts['url'])) {
+        return '<!-- Error: URL is required -->';
+    }
+
+    $url = esc_url($atts['url']);
+
+    $cache_key = 'manual_url_button_' . md5($url);
+    $cached_output = get_transient($cache_key);
+
+    if ($cached_output !== false) {
+        return $cached_output . '<!-- Cached version -->';
+    }
+
+    $image = esc_url($atts['image']);
+    $title = sanitize_text_field($atts['title']);
+    $description = sanitize_text_field($atts['description']);
+
+    $output = '<a href="' . $url . '" target="_blank" rel="noopener" class="og-preview">';
+    if (!empty($image)) {
+        $output .= '<div class="og-image"><img src="' . $image . '" alt="' . esc_attr($title) . '"></div>';
+    }
+    if (!empty($title)) {
+        $output .= '<h3 class="wp-block-post-title og-title">' . $title . '</h3>';
+    }
+    if (!empty($description)) {
+        $output .= '<p class="main-header has-medium-font-size og-desc">' . $description . '</p>';
+    }
+    $output .= '</a>';
+
+    set_transient($cache_key, $output, 86400);
+
+    return $output;
+}
+add_shortcode('url-button', 'manual_url_button_shortcode');
+
+// Open Graph Shortcode
+function open_graph_shortcode($atts) {
+    $atts = shortcode_atts(array(
+        'url' => 'https://website.com'
     ), $atts);
 
     $url = esc_url($atts['url']);
 
-    // Fetch the Instagram page
+    // Create unique cache key based on URL
+    $cache_key = 'open_graph_' . md5($url);
+
+    // Try to get cached version first
+    // $cached_output = get_transient($cache_key);
+    //
+    // if ($cached_output !== false) {
+    //     return $cached_output . '<!-- Cached version -->';
+    // }
+
+    // If no cache, fetch from Instagram
     $response = wp_remote_get($url, array(
         'timeout' => 30,
         'user-agent' => 'Mozilla/5.0 (compatible; WordPress)'
@@ -524,37 +706,26 @@ function ig_profile_shortcode($atts) {
 
     // Extract Open Graph data
     preg_match('/<meta property="og:image" content="([^"]*)"/i', $html, $image);
+    preg_match('/<meta property="og:title" content="([^"]*)"/i', $html, $title);
     preg_match('/<meta property="og:description" content="([^"]*)"/i', $html, $desc);
 
-    // Extract username from description - handle HTML encoded @ symbol
-    $username = '';
-    if (!empty($desc[1])) {
-        // Look for pattern with HTML encoded @ (&#064;)
-        if (preg_match('/\(&#064;([^\)]+)\)/', $desc[1], $matches)) {
-            $username = $matches[1];
-        }
-        // Fallback: look for regular @ symbol
-        elseif (preg_match('/\(@([^\)]+)\)/', $desc[1], $matches)) {
-            $username = $matches[1];
-        }
-    }
-
-    $output = '<a href="' . esc_url($url) . '" target="_blank" rel="noopener" class="ig-profile-preview">';
-    if (!empty($username)) {
-        $output .= '<h3 class="ig-profile-username">@' . esc_html($username) . '</h3>';
-    } else {
-        $output .= '<h3 class="ig-profile-username">@' . esc_html(basename($url)) . '</h3>';
-    }
+    $output = '<a href="' . esc_url($url) . '" target="_blank" rel="noopener" class="og-preview">';
     if (!empty($image[1])) {
-        $output .= '<img src="' . esc_url($image[1]) . '" alt="Profile" class="ig-profile-image">';
+        $output .= '<div class="og-image"><img src="' . esc_url($image[1]) . '" alt="Link Thumbnail"></div>';
+    }
+    if (!empty($title)) {
+        $clean_title = html_entity_decode($title[1]);
+        $output .= '<h3 class="wp-block-post-title og-title">' . esc_html($clean_title) . '</h3>';
     }
     if (!empty($desc[1])) {
-        // Decode HTML entities for display
         $clean_desc = html_entity_decode($desc[1]);
-        $output .= '<p class="ig-profile-desc has-medium-font-size">' . esc_html($clean_desc) . '</p>';
+        $output .= '<p class="main-header has-medium-font-size og-desc">' . esc_html($clean_desc) . '</p>';
     }
     $output .= '</a>';
 
-    return $output;
+    // Cache for 24 hours (86400 seconds)
+    // set_transient($cache_key, $output, 86400);
+
+    return $output . '<!-- Fresh fetch -->';
 }
-add_shortcode('ig_profile', 'ig_profile_shortcode');
+add_shortcode('open-graph', 'open_graph_shortcode');
